@@ -19,13 +19,21 @@ class Dealership extends Component {
     axios.get('https://api.npoint.io/9f8ea6d2ec305842a78c')
       .then(response => {
         const { cars, motorbikes } = response.data;
-        const carsWithPrices = cars.map(car => ({ ...car, price: this.generateRandomPrice() }));
-        const motorbikesWithPrices = motorbikes.map(motorbike => ({ ...motorbike, price: this.generateRandomPrice() }));
+        const carsWithPrices = cars.map(car => ({ ...car, price: this.generateRandomPrice(), isInCart: false }));
+        const motorbikesWithPrices = motorbikes.map(motorbike => ({ ...motorbike, price: this.generateRandomPrice(), isInCart: false }));
         this.setState({ cars: carsWithPrices, motorbikes: motorbikesWithPrices });
       })
       .catch(error => {
         console.error('Error fetching data:', error);
       });
+  }
+
+  handleCartToggle = (type, index) => {
+    this.setState(prevState => {
+      const vehicles = [...prevState[type]];
+      vehicles[index].isInCart = !vehicles[index].isInCart;
+      return { [type]: vehicles };
+    });
   }
 
   render() {
@@ -42,6 +50,9 @@ class Dealership extends Component {
               <img src={car.image_url} alt={car.name} />
               <h3>{car.name}</h3>
               <p>Price: {car.price}</p>
+              <button onClick={() => this.handleCartToggle('cars', index)}>
+                {car.isInCart ? 'Remove from Cart' : 'Add to Cart'}
+              </button>
             </div>
           ))}
         </div>
@@ -53,6 +64,9 @@ class Dealership extends Component {
               <img src={motorbike.image_url} alt={motorbike.name} />
               <h3>{motorbike.name}</h3>
               <p>Price: {motorbike.price}</p>
+              <button onClick={() => this.handleCartToggle('motorbikes', index)}>
+                {motorbike.isInCart ? 'Remove from Cart' : 'Add to Cart'}
+              </button>
             </div>
           ))}
         </div>
