@@ -1,26 +1,20 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import './App.css'; // Import your CSS file
+import './App.css';
 
 class Dealership extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    cars: [],
+    motorbikes: [],
+    cart: [],
+    isCartModalOpen: false,
+    notificationMessage: '',
+    searchQuery: '',
+    sortBy: 'price-high',
+    vehicleType: 'all',
+  };
 
-    this.state = {
-      cars: [],
-      motorbikes: [],
-      cart: [],
-      isCartModalOpen: false,
-      notificationMessage: '',
-      searchQuery: '',
-      sortBy: 'price-high', // Default sorting option
-      vehicleType: 'all', // Default filter option
-    };
-  }
-
-  generateRandomPrice = () => {
-    return `Ksh ${Math.floor(Math.random() * (80000000 - 15000000) + 15000000)}`;
-  }
+  generateRandomPrice = () => `Ksh ${Math.floor(Math.random() * (80000000 - 15000000) + 15000000)}`;
 
   componentDidMount() {
     axios.get('https://api.npoint.io/9f8ea6d2ec305842a78c')
@@ -38,7 +32,7 @@ class Dealership extends Component {
   handleCartToggle = (type, index) => {
     this.setState(prevState => {
       const vehicles = [...prevState[type]];
-      const vehicle = vehicles[index];
+      const vehicle = { ...vehicles[index] }; // Create a copy of the vehicle
 
       // Toggle isInCart and update the cart
       vehicle.isInCart = !vehicle.isInCart;
@@ -60,7 +54,7 @@ class Dealership extends Component {
     this.setState({ notificationMessage: message }, () => {
       setTimeout(() => {
         this.setState({ notificationMessage: '' });
-      }, 2000); // Clear the message after 2 seconds
+      }, 2000);
     });
   }
 
@@ -94,29 +88,19 @@ class Dealership extends Component {
   render() {
     const { cars, motorbikes, cart, isCartModalOpen, notificationMessage, searchQuery, sortBy, vehicleType } = this.state;
 
-    // Filter and sort the vehicles based on search, sorting, and filtering criteria
-    const filteredCars = cars.filter(car =>
-      car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      car.model.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const sortedCars = [...filteredCars].sort((a, b) => {
-      if (sortBy === 'price-high') {
-        return b.price - a.price; // Highest to lowest price
-      } else if (sortBy === 'price-low') {
-        return a.price - b.price; // Lowest to highest price
-      } else if (sortBy === 'name-a-z') {
-        return a.name.localeCompare(b.name); // A to Z
-      } else if (sortBy === 'name-z-a') {
-        return b.name.localeCompare(a.name); // Z to A
-      }
-    });
+    const filteredVehicles = vehicleType === 'all'
+      ? [...cars, ...motorbikes]
+      : vehicleType === 'cars'
+      ? cars
+      : motorbikes;
 
-    const filteredMotorbikes = motorbikes.filter(motorbike =>
-      motorbike.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      motorbike.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      motorbike.model.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const sortedVehicles = [...filteredVehicles].sort((a, b) => {
+      if (sortBy === 'price-high') return parseFloat(b.price.split(' ')[1]) - parseFloat(a.price.split(' ')[1]);
+      if (sortBy === 'price-low') return parseFloat(a.price.split(' ')[1]) - parseFloat(b.price.split(' ')[1]);
+      if (sortBy === 'name-a-z') return a.name.localeCompare(b.name);
+      if (sortBy === 'name-z-a') return b.name.localeCompare(a.name);
+      return 0;
+    });
 
     return (
       <div className="dealership">
@@ -168,7 +152,7 @@ class Dealership extends Component {
 
         <h3>{vehicleType === 'cars' ? 'Cars' : vehicleType === 'motorbikes' ? 'Motorbikes' : 'All Vehicles'}</h3>
         <div className="vehicle-list">
-          {(vehicleType === 'cars' ? sortedCars : vehicleType === 'motorbikes' ? filteredMotorbikes : [...sortedCars, ...filteredMotorbikes]).map((vehicle, index) => (
+          {sortedVehicles.map((vehicle, index) => (
             <div key={index} className="vehicle">
               <img src={vehicle.image_url} alt={vehicle.name} />
               <h3>{vehicle.name}</h3>
