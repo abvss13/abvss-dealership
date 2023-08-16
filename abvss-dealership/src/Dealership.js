@@ -13,7 +13,8 @@ class Dealership extends Component {
       isCartModalOpen: false,
       notificationMessage: '',
       searchQuery: '',
-      sortBy: 'price', // Default sorting option
+      sortBy: 'price-high', // Default sorting option
+      vehicleType: 'all', // Default filter option
     };
   }
 
@@ -86,22 +87,36 @@ class Dealership extends Component {
     this.setState({ sortBy: event.target.value });
   }
 
-  render() {
-    const { cars, motorbikes, cart, isCartModalOpen, notificationMessage, searchQuery, sortBy } = this.state;
+  handleFilterChange = (event) => {
+    this.setState({ vehicleType: event.target.value });
+  }
 
-    // Filter and sort the vehicles based on search and sorting criteria
+  render() {
+    const { cars, motorbikes, cart, isCartModalOpen, notificationMessage, searchQuery, sortBy, vehicleType } = this.state;
+
+    // Filter and sort the vehicles based on search, sorting, and filtering criteria
     const filteredCars = cars.filter(car =>
       car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
       car.model.toLowerCase().includes(searchQuery.toLowerCase())
     );
     const sortedCars = [...filteredCars].sort((a, b) => {
-      if (sortBy === 'price') {
-        return a.price - b.price;
-      } else {
-        return a.name.localeCompare(b.name);
+      if (sortBy === 'price-high') {
+        return b.price - a.price; // Highest to lowest price
+      } else if (sortBy === 'price-low') {
+        return a.price - b.price; // Lowest to highest price
+      } else if (sortBy === 'name-a-z') {
+        return a.name.localeCompare(b.name); // A to Z
+      } else if (sortBy === 'name-z-a') {
+        return b.name.localeCompare(a.name); // Z to A
       }
     });
+
+    const filteredMotorbikes = motorbikes.filter(motorbike =>
+      motorbike.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      motorbike.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      motorbike.model.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
       <div className="dealership">
@@ -116,9 +131,14 @@ class Dealership extends Component {
             onChange={this.handleSearchChange}
           />
           <select value={sortBy} onChange={this.handleSortChange}>
-            <option value="price">Sort by Price</option>
-            <option value="name">Sort by Name</option>
+            <option value="price-high">Sort by Highest Price</option>
+            <option value="price-low">Sort by Lowest Price</option>
+            <option value="name-a-z">Sort by Name (A to Z)</option>
+            <option value="name-z-a">Sort by Name (Z to A)</option>
           </select>
+          <button onClick={() => this.handleFilterChange({ target: { value: 'all' } })}>All</button>
+          <button onClick={() => this.handleFilterChange({ target: { value: 'cars' } })}>Cars</button>
+          <button onClick={() => this.handleFilterChange({ target: { value: 'motorbikes' } })}>Motorbikes</button>
         </div>
 
         <button className="view-cart-button" onClick={this.handleCartModalOpen}>
@@ -146,45 +166,28 @@ class Dealership extends Component {
           </div>
         )}
 
-        <h3>Cars</h3>
+        <h3>{vehicleType === 'cars' ? 'Cars' : vehicleType === 'motorbikes' ? 'Motorbikes' : 'All Vehicles'}</h3>
         <div className="vehicle-list">
-          {sortedCars.map((car, index) => (
+          {(vehicleType === 'cars' ? sortedCars : vehicleType === 'motorbikes' ? filteredMotorbikes : [...sortedCars, ...filteredMotorbikes]).map((vehicle, index) => (
             <div key={index} className="vehicle">
-              <img src={car.image_url} alt={car.name} />
-              <h3>{car.name}</h3>
-              <p>Price: {car.price}</p>
+              <img src={vehicle.image_url} alt={vehicle.name} />
+              <h3>{vehicle.name}</h3>
+              <p>Price: {vehicle.price}</p>
               <button
-                className={car.isInCart ? 'remove-from-cart-button' : 'add-to-cart-button'}
-                onClick={() => this.handleCartToggle('cars', index)}
+                className={vehicle.isInCart ? 'remove-from-cart-button' : 'add-to-cart-button'}
+                onClick={() => this.handleCartToggle(vehicleType === 'cars' ? 'cars' : 'motorbikes', index)}
               >
-                {car.isInCart ? 'Remove from Cart' : 'Add to Cart'}
+                {vehicle.isInCart ? 'Remove from Cart' : 'Add to Cart'}
               </button>
-              {notificationMessage && (
-                <p className="notification">{notificationMessage}</p>
-              )}
             </div>
           ))}
         </div>
 
-        <h3>Motorbikes</h3>
-        <div className="vehicle-list">
-          {motorbikes.map((motorbike, index) => (
-            <div key={index} className="vehicle">
-              <img src={motorbike.image_url} alt={motorbike.name} />
-              <h3>{motorbike.name}</h3>
-              <p>Price: {motorbike.price}</p>
-              <button
-                className={motorbike.isInCart ? 'remove-from-cart-button' : 'add-to-cart-button'}
-                onClick={() => this.handleCartToggle('motorbikes', index)}
-              >
-                {motorbike.isInCart ? 'Remove from Cart' : 'Add to Cart'}
-              </button>
-              {notificationMessage && (
-                <p className="notification">{notificationMessage}</p>
-              )}
-            </div>
-          ))}
-        </div>
+        {notificationMessage && (
+          <div className="notification">
+            <p>{notificationMessage}</p>
+          </div>
+        )}
       </div>
     );
   }
