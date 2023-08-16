@@ -1,4 +1,3 @@
-// Dealership.js
 import React, { Component } from 'react';
 import axios from 'axios';
 import './App.css'; // Import your CSS file
@@ -13,6 +12,8 @@ class Dealership extends Component {
       cart: [],
       isCartModalOpen: false,
       notificationMessage: '',
+      searchQuery: '',
+      sortBy: 'price', // Default sorting option
     };
   }
 
@@ -77,13 +78,48 @@ class Dealership extends Component {
     this.setState({ isCartModalOpen: false });
   }
 
+  handleSearchChange = (event) => {
+    this.setState({ searchQuery: event.target.value });
+  }
+
+  handleSortChange = (event) => {
+    this.setState({ sortBy: event.target.value });
+  }
+
   render() {
-    const { cars, motorbikes, cart, isCartModalOpen, notificationMessage } = this.state;
+    const { cars, motorbikes, cart, isCartModalOpen, notificationMessage, searchQuery, sortBy } = this.state;
+
+    // Filter and sort the vehicles based on search and sorting criteria
+    const filteredCars = cars.filter(car =>
+      car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      car.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      car.model.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    const sortedCars = [...filteredCars].sort((a, b) => {
+      if (sortBy === 'price') {
+        return a.price - b.price;
+      } else {
+        return a.name.localeCompare(b.name);
+      }
+    });
 
     return (
       <div className="dealership">
         <h1 className="header">Abvss Dealership</h1>
         <h2 className="sub-header">Welcome to Our Dealership</h2>
+
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search for vehicles..."
+            value={searchQuery}
+            onChange={this.handleSearchChange}
+          />
+          <select value={sortBy} onChange={this.handleSortChange}>
+            <option value="price">Sort by Price</option>
+            <option value="name">Sort by Name</option>
+          </select>
+        </div>
 
         <button className="view-cart-button" onClick={this.handleCartModalOpen}>
           View Cart
@@ -112,7 +148,7 @@ class Dealership extends Component {
 
         <h3>Cars</h3>
         <div className="vehicle-list">
-          {cars.map((car, index) => (
+          {sortedCars.map((car, index) => (
             <div key={index} className="vehicle">
               <img src={car.image_url} alt={car.name} />
               <h3>{car.name}</h3>
