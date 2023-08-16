@@ -7,7 +7,8 @@ class Dealership extends Component {
 
     this.state = {
       cars: [],
-      motorbikes: []
+      motorbikes: [],
+      cart: []
     };
   }
 
@@ -31,18 +32,37 @@ class Dealership extends Component {
   handleCartToggle = (type, index) => {
     this.setState(prevState => {
       const vehicles = [...prevState[type]];
-      vehicles[index].isInCart = !vehicles[index].isInCart;
-      return { [type]: vehicles };
+      const vehicle = vehicles[index];
+
+      // Toggle isInCart and update the cart
+      vehicle.isInCart = !vehicle.isInCart;
+      const updatedCart = vehicle.isInCart
+        ? [...prevState.cart, vehicle]
+        : prevState.cart.filter(item => item !== vehicle);
+
+      return { [type]: vehicles, cart: updatedCart };
     });
   }
 
   render() {
-    const { cars, motorbikes } = this.state;
+    const { cars, motorbikes, cart } = this.state;
 
     return (
       <div className="dealership">
         <h1>Abvss Dealership</h1>
         <h2>Welcome to Our Dealership</h2>
+
+        <h3>Your Cart</h3>
+        <div className="cart">
+          {cart.map((item, index) => (
+            <div key={index} className="cart-item">
+              <img src={item.image_url} alt={item.name} />
+              <h3>{item.name}</h3>
+              <p>Price: {item.price}</p>
+            </div>
+          ))}
+        </div>
+
         <h3>Cars</h3>
         <div className="vehicle-list">
           {cars.map((car, index) => (
