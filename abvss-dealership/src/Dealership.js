@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import './App.css'; // Import your CSS file
 
 class Dealership extends Component {
   constructor(props) {
@@ -45,6 +46,13 @@ class Dealership extends Component {
     });
   }
 
+  handleRemoveFromCart = (index) => {
+    this.setState(prevState => {
+      const updatedCart = prevState.cart.filter((item, itemIndex) => itemIndex !== index);
+      return { cart: updatedCart };
+    });
+  }
+
   handleCartModalOpen = () => {
     this.setState({ isCartModalOpen: true });
   }
@@ -58,10 +66,12 @@ class Dealership extends Component {
 
     return (
       <div className="dealership">
-        <h1>Abvss Dealership</h1>
-        <h2>Welcome to Our Dealership</h2>
+        <h1 className="header">Abvss Dealership</h1>
+        <h2 className="sub-header">Welcome to Our Dealership</h2>
 
-        <button onClick={this.handleCartModalOpen}>View Cart</button>
+        <button className="view-cart-button" onClick={this.handleCartModalOpen}>
+          View Cart
+        </button>
 
         {isCartModalOpen && (
           <div className="cart-modal">
@@ -72,9 +82,14 @@ class Dealership extends Component {
                   <img src={item.image_url} alt={item.name} />
                   <h3>{item.name}</h3>
                   <p>Price: {item.price}</p>
+                  <button className="remove-from-cart-button" onClick={() => this.handleRemoveFromCart(index)}>
+                    Remove from Cart
+                  </button>
                 </div>
               ))}
-              <button onClick={this.handleCartModalClose}>Close</button>
+              <button className="close-button" onClick={this.handleCartModalClose}>
+                Close
+              </button>
             </div>
           </div>
         )}
@@ -86,7 +101,10 @@ class Dealership extends Component {
               <img src={car.image_url} alt={car.name} />
               <h3>{car.name}</h3>
               <p>Price: {car.price}</p>
-              <button onClick={() => this.handleCartToggle('cars', index)}>
+              <button
+                className={car.isInCart ? 'remove-from-cart-button' : 'add-to-cart-button'}
+                onClick={() => this.handleCartToggle('cars', index)}
+              >
                 {car.isInCart ? 'Remove from Cart' : 'Add to Cart'}
               </button>
             </div>
@@ -100,7 +118,10 @@ class Dealership extends Component {
               <img src={motorbike.image_url} alt={motorbike.name} />
               <h3>{motorbike.name}</h3>
               <p>Price: {motorbike.price}</p>
-              <button onClick={() => this.handleCartToggle('motorbikes', index)}>
+              <button
+                className={motorbike.isInCart ? 'remove-from-cart-button' : 'add-to-cart-button'}
+                onClick={() => this.handleCartToggle('motorbikes', index)}
+              >
                 {motorbike.isInCart ? 'Remove from Cart' : 'Add to Cart'}
               </button>
             </div>
