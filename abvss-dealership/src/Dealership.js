@@ -1,3 +1,4 @@
+// Dealership.js
 import React, { Component } from 'react';
 import axios from 'axios';
 import './App.css'; // Import your CSS file
@@ -10,7 +11,8 @@ class Dealership extends Component {
       cars: [],
       motorbikes: [],
       cart: [],
-      isCartModalOpen: false
+      isCartModalOpen: false,
+      notificationMessage: '',
     };
   }
 
@@ -42,7 +44,21 @@ class Dealership extends Component {
         ? [...prevState.cart, vehicle]
         : prevState.cart.filter(item => item !== vehicle);
 
+      // Show notification message
+      const notificationMessage = vehicle.isInCart
+        ? `${vehicle.name} added to cart`
+        : `${vehicle.name} removed from cart`;
+      this.showNotification(notificationMessage);
+
       return { [type]: vehicles, cart: updatedCart };
+    });
+  }
+
+  showNotification = (message) => {
+    this.setState({ notificationMessage: message }, () => {
+      setTimeout(() => {
+        this.setState({ notificationMessage: '' });
+      }, 2000); // Clear the message after 2 seconds
     });
   }
 
@@ -62,7 +78,7 @@ class Dealership extends Component {
   }
 
   render() {
-    const { cars, motorbikes, cart, isCartModalOpen } = this.state;
+    const { cars, motorbikes, cart, isCartModalOpen, notificationMessage } = this.state;
 
     return (
       <div className="dealership">
@@ -107,6 +123,9 @@ class Dealership extends Component {
               >
                 {car.isInCart ? 'Remove from Cart' : 'Add to Cart'}
               </button>
+              {notificationMessage && (
+                <p className="notification">{notificationMessage}</p>
+              )}
             </div>
           ))}
         </div>
@@ -124,6 +143,9 @@ class Dealership extends Component {
               >
                 {motorbike.isInCart ? 'Remove from Cart' : 'Add to Cart'}
               </button>
+              {notificationMessage && (
+                <p className="notification">{notificationMessage}</p>
+              )}
             </div>
           ))}
         </div>
