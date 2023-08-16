@@ -8,7 +8,8 @@ class Dealership extends Component {
     this.state = {
       cars: [],
       motorbikes: [],
-      cart: []
+      cart: [],
+      isCartModalOpen: false
     };
   }
 
@@ -44,24 +45,39 @@ class Dealership extends Component {
     });
   }
 
+  handleCartModalOpen = () => {
+    this.setState({ isCartModalOpen: true });
+  }
+
+  handleCartModalClose = () => {
+    this.setState({ isCartModalOpen: false });
+  }
+
   render() {
-    const { cars, motorbikes, cart } = this.state;
+    const { cars, motorbikes, cart, isCartModalOpen } = this.state;
 
     return (
       <div className="dealership">
         <h1>Abvss Dealership</h1>
         <h2>Welcome to Our Dealership</h2>
 
-        <h3>Your Cart</h3>
-        <div className="cart">
-          {cart.map((item, index) => (
-            <div key={index} className="cart-item">
-              <img src={item.image_url} alt={item.name} />
-              <h3>{item.name}</h3>
-              <p>Price: {item.price}</p>
+        <button onClick={this.handleCartModalOpen}>View Cart</button>
+
+        {isCartModalOpen && (
+          <div className="cart-modal">
+            <div className="cart-content">
+              <h3>Your Cart</h3>
+              {cart.map((item, index) => (
+                <div key={index} className="cart-item">
+                  <img src={item.image_url} alt={item.name} />
+                  <h3>{item.name}</h3>
+                  <p>Price: {item.price}</p>
+                </div>
+              ))}
+              <button onClick={this.handleCartModalClose}>Close</button>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
         <h3>Cars</h3>
         <div className="vehicle-list">
