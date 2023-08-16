@@ -11,11 +11,17 @@ class Dealership extends Component {
     };
   }
 
+  generateRandomPrice = () => {
+    return `Ksh ${Math.floor(Math.random() * (80000000 - 15000000) + 15000000)}`;
+  }
+
   componentDidMount() {
     axios.get('https://api.npoint.io/9f8ea6d2ec305842a78c')
       .then(response => {
         const { cars, motorbikes } = response.data;
-        this.setState({ cars, motorbikes });
+        const carsWithPrices = cars.map(car => ({ ...car, price: this.generateRandomPrice() }));
+        const motorbikesWithPrices = motorbikes.map(motorbike => ({ ...motorbike, price: this.generateRandomPrice() }));
+        this.setState({ cars: carsWithPrices, motorbikes: motorbikesWithPrices });
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -27,8 +33,9 @@ class Dealership extends Component {
 
     return (
       <div className="dealership">
-        <h1>Welcome to Our Dealership</h1>
-        <h2>Cars</h2>
+        <h1>Abvss Dealership</h1>
+        <h2>Welcome to Our Dealership</h2>
+        <h3>Cars</h3>
         <div className="vehicle-list">
           {cars.map((car, index) => (
             <div key={index} className="vehicle">
@@ -39,7 +46,7 @@ class Dealership extends Component {
           ))}
         </div>
 
-        <h2>Motorbikes</h2>
+        <h3>Motorbikes</h3>
         <div className="vehicle-list">
           {motorbikes.map((motorbike, index) => (
             <div key={index} className="vehicle">
