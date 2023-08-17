@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import './App.css';
+import './App.css'; // Import your CSS file
 
 class Dealership extends Component {
   state = {
@@ -8,6 +8,7 @@ class Dealership extends Component {
     motorbikes: [],
     cart: [],
     isCartModalOpen: false,
+    isDealerContactOpen: false,
     notificationMessage: '',
     searchQuery: '',
     sortBy: 'price-high',
@@ -32,7 +33,7 @@ class Dealership extends Component {
   handleCartToggle = (type, index) => {
     this.setState(prevState => {
       const vehicles = [...prevState[type]];
-      const vehicle = { ...vehicles[index] }; // Create a copy of the vehicle
+      const vehicle = { ...vehicles[index] };
 
       // Toggle isInCart and update the cart
       vehicle.isInCart = !vehicle.isInCart;
@@ -73,6 +74,12 @@ class Dealership extends Component {
     this.setState({ isCartModalOpen: false });
   }
 
+  handleDealerContactToggle = () => {
+    this.setState(prevState => ({
+      isDealerContactOpen: !prevState.isDealerContactOpen,
+    }));
+  }
+
   handleSearchChange = (event) => {
     this.setState({ searchQuery: event.target.value });
   }
@@ -85,8 +92,12 @@ class Dealership extends Component {
     this.setState({ vehicleType: event.target.value });
   }
 
+  getTotalCartItems = () => {
+    return this.state.cart.reduce((total, item) => total + (item.isInCart ? 1 : 0), 0);
+  }
+
   render() {
-    const { cars, motorbikes, cart, isCartModalOpen, notificationMessage, searchQuery, sortBy, vehicleType } = this.state;
+    const { cars, motorbikes, cart, isCartModalOpen, isDealerContactOpen, notificationMessage, searchQuery, sortBy, vehicleType } = this.state;
 
     const filteredVehicles = vehicleType === 'all'
       ? [...cars, ...motorbikes]
@@ -104,8 +115,10 @@ class Dealership extends Component {
 
     return (
       <div className="dealership">
-        <h1 className="header">Abvss Dealership</h1>
-        <h2 className="sub-header">Welcome to Our Dealership</h2>
+        <header className="header">
+          <h1>Abvss Dealership</h1>
+          <h2>Welcome to Our Dealership</h2>
+        </header>
 
         <div className="search-bar">
           <input
@@ -120,29 +133,47 @@ class Dealership extends Component {
             <option value="name-a-z">Sort by Name (A to Z)</option>
             <option value="name-z-a">Sort by Name (Z to A)</option>
           </select>
-          <button onClick={() => this.handleFilterChange({ target: { value: 'all' } })}>All</button>
-          <button onClick={() => this.handleFilterChange({ target: { value: 'cars' } })}>Cars</button>
-          <button onClick={() => this.handleFilterChange({ target: { value: 'motorbikes' } })}>Motorbikes</button>
+          <div className="filter-buttons">
+            <button className={vehicleType === 'all' ? 'active' : ''} onClick={() => this.handleFilterChange({ target: { value: 'all' } })}>All</button>
+            <button className={vehicleType === 'cars' ? 'active' : ''} onClick={() => this.handleFilterChange({ target: { value: 'cars' } })}>Cars</button>
+            <button className={vehicleType === 'motorbikes' ? 'active' : ''} onClick={() => this.handleFilterChange({ target: { value: 'motorbikes' } })}>Motorbikes</button>
+          </div>
         </div>
 
         <button className="view-cart-button" onClick={this.handleCartModalOpen}>
-          View Cart
+          View Cart ({this.getTotalCartItems()})
         </button>
+
+        <button className="dealer-contact-button" onClick={this.handleDealerContactToggle}>
+          Dealer Contact
+        </button>
+
+        {isDealerContactOpen && (
+          <div className="dealer-contact">
+            <h3>Dealer Contact</h3>
+            <p>Telephone: +254798491946</p>
+            <p>Gmail: abdulabass1738@gmail.com</p>
+          </div>
+        )}
 
         {isCartModalOpen && (
           <div className="cart-modal">
             <div className="cart-content">
               <h3>Your Cart</h3>
-              {cart.map((item, index) => (
-                <div key={index} className="cart-item">
-                  <img src={item.image_url} alt={item.name} />
-                  <h3>{item.name}</h3>
-                  <p>Price: {item.price}</p>
-                  <button className="remove-from-cart-button" onClick={() => this.handleRemoveFromCart(index)}>
-                    Remove from Cart
-                  </button>
-                </div>
-              ))}
+              {cart.length === 0 ? <p>Your cart is empty.</p> : (
+                <>
+                  {cart.map((item, index) => (
+                    <div key={index} className="cart-item">
+                      <img src={item.image_url} alt={item.name} />
+                      <h3>{item.name}</h3>
+                      <p>Price: {item.price}</p>
+                      <button className="remove-from-cart-button" onClick={() => this.handleRemoveFromCart(index)}>
+                        Remove from Cart
+                      </button>
+                    </div>
+                  ))}
+                </>
+              )}
               <button className="close-button" onClick={this.handleCartModalClose}>
                 Close
               </button>
@@ -150,21 +181,25 @@ class Dealership extends Component {
           </div>
         )}
 
-        <h3>{vehicleType === 'cars' ? 'Cars' : vehicleType === 'motorbikes' ? 'Motorbikes' : 'All Vehicles'}</h3>
+        <h3 className="vehicle-type">{vehicleType === 'cars' ? 'Cars' : vehicleType === 'motorbikes' ? 'Motorbikes' : 'All Vehicles'}</h3>
         <div className="vehicle-list">
-          {sortedVehicles.map((vehicle, index) => (
-            <div key={index} className="vehicle">
-              <img src={vehicle.image_url} alt={vehicle.name} />
-              <h3>{vehicle.name}</h3>
-              <p>Price: {vehicle.price}</p>
-              <button
-                className={vehicle.isInCart ? 'remove-from-cart-button' : 'add-to-cart-button'}
-                onClick={() => this.handleCartToggle(vehicleType === 'cars' ? 'cars' : 'motorbikes', index)}
-              >
-                {vehicle.isInCart ? 'Remove from Cart' : 'Add to Cart'}
-              </button>
-            </div>
-          ))}
+          {sortedVehicles.length === 0 ? <p>No vehicles found.</p> : (
+            <>
+              {sortedVehicles.map((vehicle, index) => (
+                <div key={index} className="vehicle">
+                  <img src={vehicle.image_url} alt={vehicle.name} />
+                  <h3>{vehicle.name}</h3>
+                  <p>Price: {vehicle.price}</p>
+                  <button
+                    className={vehicle.isInCart ? 'remove-from-cart-button' : 'add-to-cart-button'}
+                    onClick={() => this.handleCartToggle(vehicleType === 'cars' ? 'cars' : 'motorbikes', index)}
+                  >
+                    {vehicle.isInCart ? 'Remove from Cart' : 'Add to Cart'}
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
         </div>
 
         {notificationMessage && (
